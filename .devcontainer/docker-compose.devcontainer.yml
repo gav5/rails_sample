@@ -1,0 +1,35 @@
+version: '3'
+services:
+    db:
+        image: postgres
+        volumes:
+            - ../tmp/db:/var/lib/postgresql/data
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_HOST_AUTH_METHOD: trust
+            PGDATA: /var/lib/postgresql/data
+    rails:
+        build: ..
+        image: myapp-rails-image
+        command: bash -c "while sleep 1000; do :; done"
+        volumes:
+            - ..:/myapp:cached
+        ports:
+            - 3000:3000
+        depends_on:
+            - db
+        links:
+            - db:database
+            - webpacker
+        environment:
+            DATABASE_USER: postgres
+            DATABASE_URL: db
+    webpacker:
+        build: ..
+        image: myapp-rails-image
+        command: bash -c "./bin/webpack-dev-server"
+        volumes:
+            - ..:/myapp:cached
+        ports:
+            - 3035:3035
+            - 9229:9229
